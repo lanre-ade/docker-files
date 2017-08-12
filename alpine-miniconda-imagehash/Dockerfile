@@ -6,7 +6,7 @@ FROM alpine:latest
 
 # Install glibc and useful packages
 RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
-    && apk --no-cache add \
+    && apk --update add \
     bash \
     git \
     curl \
@@ -29,29 +29,24 @@ RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/re
 
 
 # Configure environment
-ENV CONDA_DIR /opt/conda
-ENV PATH $CONDA_DIR/bin:$PATH
-ENV SHELL /bin/bash
-ENV LC_ALL en_US.UTF-8 LANG en_US.UTF-8 LANGUAGE en_US.UTF-8
-
 # Configure Miniconda
-ENV MINICONDA_VER 4.2.12
-ENV MINICONDA Miniconda3-$MINICONDA_VER-Linux-x86_64.sh
-ENV MINICONDA_URL https://repo.continuum.io/miniconda/$MINICONDA
-ENV MINICONDA_MD5_SUM d0c7c71cc5659e54ab51f2005a8d96f3
+ENV PATH=/opt/conda/bin:$PATH \
+  SHELL=/bin/bash \
+  LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 \
+  MINICONDA_URL=https://repo.continuum.io/miniconda/Miniconda3-4.2.12-Linux-x86_64.sh \
+  MINICONDA_MD5_SUM=d0c7c71cc5659e54ab51f2005a8d96f3
 
 
 # Install conda and imagehash
 RUN cd /tmp && \
-    mkdir -p $CONDA_DIR && \
+    mkdir -p /opt/conda && \
     curl -L $MINICONDA_URL  -o miniconda.sh && \
     echo "$MINICONDA_MD5_SUM  miniconda.sh" | md5sum -c - && \
-    /bin/bash miniconda.sh -f -b -p $CONDA_DIR && \
+    /bin/bash miniconda.sh -f -b -p /opt/conda && \
     rm miniconda.sh && \
-    $CONDA_DIR/bin/conda install --yes conda==$MINICONDA_VER && \
+    /opt/conda/bin/conda install --yes conda==4.2.12 && \
+    pip install imagehash
 
-# Install imagehash
-pip install imagehash
 
 # Configure container startup
 WORKDIR /home
